@@ -1,11 +1,8 @@
-import pytest
 from allure_commons._allure import step
 from selene.support.shared import browser
 from selene import have
-from flaky import flaky
 
 
-@flaky(max_runs=3, min_passes=1)
 def test_add_to_shopping_cart(authorizated_session, demoshop):
     browser.open('')
 
@@ -17,6 +14,9 @@ def test_add_to_shopping_cart(authorizated_session, demoshop):
         browser.element('.ico-cart .cart-label').click()
     with step('Check the shopping cart is not empty'):
         browser.element('.cart-qty').should(have.text('1'))
+    with step('Delete the laptop from the shopping cart'):
+        browser.element('.qty-input').clear().set_value('0')
+        browser.element('.update-cart-button').click()
 
 
 def test_delete_from_shopping_cart(authorizated_session, demoshop):
@@ -35,7 +35,7 @@ def test_delete_from_shopping_cart(authorizated_session, demoshop):
         browser.element('.order-summary-content').should(have.text('Your Shopping Cart is empty!'))
 
 
-def test_change_the_count_of_product_in_the_shopping_cart(authorizated_session, clean_the_shopping_cart, demoshop):
+def test_change_the_count_of_product_in_the_shopping_cart(authorizated_session, demoshop):
     browser.open('')
 
     with step('Choose the laptop'):
@@ -49,3 +49,6 @@ def test_change_the_count_of_product_in_the_shopping_cart(authorizated_session, 
         browser.element('.update-cart-button').click()
     with step('Check the count of the product is increased'):
         browser.element('.cart-qty').should(have.text('2'))
+    with step('Delete the laptop from the shopping cart'):
+        browser.element('.qty-input').clear().set_value('0')
+        browser.element('.update-cart-button').click()
