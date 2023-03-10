@@ -11,3 +11,4 @@ Homework for course QA GURU Python (API, part III)
 
 - [X] - API methods
 - [X] - Allure logging
+- [X] - Hosts

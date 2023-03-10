@@ -1,11 +1,13 @@
 import os
 
 import pytest
+from allure_commons._allure import step
 from dotenv import load_dotenv
 from selene.support.shared import browser
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
-from utils.base_session import BaseSession
+
+from framework.DemoWebShopWithEnv import DemoWebShopWithEnv
 
 load_dotenv()
 LOGIN = os.getenv('LOGIN')
@@ -13,16 +15,20 @@ PASSWORD = os.getenv('PASSWORD')
 SHOP_URL = os.getenv('API_DEMOWEBSHOP')
 
 
-@pytest.fixture(scope="session")
-def reqres():
-    api_url = os.getenv("API_REQRES")
-    return BaseSession(api_url)
+def pytest_addoption(parser):
+    parser.addoption("--env")
 
 
-@pytest.fixture(scope="session")
-def demoshop():
-    api_url = os.getenv("API_DEMOWEBSHOP")
-    return BaseSession(api_url)
+@pytest.fixture(scope='session')
+def demoshop(request):
+    env = request.config.getoption("--env")
+    return DemoWebShopWithEnv(env)
+
+
+@pytest.fixture(scope='session')
+def reqres(request):
+    env = request.config.getoption("--env")
+    return DemoWebShopWithEnv(env).reqres
 
 
 @pytest.fixture
@@ -40,16 +46,12 @@ def authorizated_session(demoshop):
     response = demoshop.post('/login', data=payload, allow_redirects=False)
     cookies = response.cookies.get('NOPCOMMERCE.AUTH')
 
+    with step("Check code"):
+        response.status_code = 302
+
     browser.open('/Themes/DefaultClean/Content/images/logo.png')
     browser.driver.add_cookie({'name': 'NOPCOMMERCE.AUTH', 'value': cookies})
 
     yield
 
-   # browser.quit()
-
-
-@pytest.fixture()
-def clean_the_shopping_cart():
-    yield
-    browser.element('.qty-input').clear().set_value('0')
-    browser.element('.update-cart-button').click()
+    browser.quit()
